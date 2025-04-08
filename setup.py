@@ -8,6 +8,7 @@ setup(
     author='Tristan',
     author_email='',
     description='',
+    package_dir={'': 'src'},
     packages=find_packages(
         # All keyword arguments below are optional:
         where='src',  # '.' by default
