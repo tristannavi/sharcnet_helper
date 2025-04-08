@@ -1,12 +1,16 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='sharcnet_helper',
     version='1.0',
-    packages=[''],
     url='',
     license='GPL',
     author='Tristan',
     author_email='',
-    description=''
+    description='',
+    packages=find_packages(
+        # All keyword arguments below are optional:
+        where='src',  # '.' by default
+        include=['*'],  # ['*'] by default
+    )
 )
