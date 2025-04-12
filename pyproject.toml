@@ -9,7 +9,7 @@ description = ""
 # readme = "README.md"
 license = { text = "GPL" }
 authors = [{ name = "Tristan" }]
-urls = { "Homepage" = "" }
+#urls = { "Homepage" = "" }
 # Add other fields such as classifiers or dependencies if needed.
 dependencies = []
 
