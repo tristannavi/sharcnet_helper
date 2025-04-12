@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sharcnet_helper"
+version = "1.1"
+description = ""
+# Optionally, if you have a README file:
+# readme = "README.md"
+license = { text = "GPL" }
+authors = [
+    { name = "Tristan", email = "" }
+]
+# Optionally, you can also add a URL:
+urls = { "Homepage" = "" }
+# Add other fields such as classifiers or dependencies if needed.
+dependencies = []
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
