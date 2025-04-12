@@ -7,7 +7,7 @@ from time import sleep
 from typing import List, Any
 
 
-def make_job_name(sep: str, *args: Any) -> str:
+def _make_job_name(sep: str, *args: Any) -> str:
     """
     Create a job name from the arguments.
     :param sep: the separator to use
@@ -22,7 +22,7 @@ def make_job_name(sep: str, *args: Any) -> str:
 class Directives:
     def __init__(self, mem: str, hours: int, modules: List[str], working_dir: Path = Path(__file__).parent,
                  minutes: int = 0, job_name: [str | None] = None, array_job: [int | List[int] | None] = None,
-                 mail_type: [str | List[str] | None] = "FAIL"):
+                 mail_type: [str | List[str] | None] = "FAIL", *args):
         """
         :param mem: the memory to allocate for the job
         :type mem: str, required
@@ -48,7 +48,10 @@ class Directives:
         self.minutes = minutes
         self.working_dir = working_dir
         self.modules = modules
-        self.job_name = job_name
+        if args is not None:
+            self.job_name = _make_job_name(*args)
+        else:
+            self.job_name = job_name
         self.array_job = array_job
         self.mail_type = mail_type
 
