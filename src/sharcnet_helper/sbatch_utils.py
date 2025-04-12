@@ -7,7 +7,7 @@ from time import sleep
 from typing import List, Any
 
 
-def _make_job_name(sep: str, *args: Any) -> str:
+def make_job_name(*args: Any, sep: str) -> str:
     """
     Create a job name from the arguments.
     :param sep: the separator to use
@@ -48,10 +48,10 @@ class Directives:
         self.minutes = minutes
         self.working_dir = working_dir
         self.modules = modules
-        if args is not None:
-            self.job_name = _make_job_name(*args)
-        else:
-            self.job_name = job_name
+        # if args is None:
+        #     self.job_name = _make_job_name(*args)
+        # else:
+        self.job_name = job_name
         self.array_job = array_job
         self.mail_type = mail_type
 
@@ -73,13 +73,13 @@ class Directives:
                     #SBATCH --mail-user=tn13bm@brocku.ca
                     #SBATCH --mail-type={self.mail_type if type(self.mail_type) == str else ','.join(self.mail_type)}
                     #SBATCH --output={self.working_dir.absolute()}/output/slurm_{self.job_name}-{"%A_%a" if self.array_job is not None else "%A"}.out
-                    #SBATCH --job-name={self.job_name}-{"%A_%a" if self.array_job is not None else "%A"}.out
+                    #SBATCH --job-name={self.job_name}-{"%A_%a" if self.array_job is not None else "%A"}
                     
                     mkdir -p {self.working_dir.absolute()}/output
                     module load {' '.join(self.modules)}
                 ''')
 
-        return directives.replace("\n\n", "\n", 1)
+        return directives  # .replace("\n\n", "\n", 1)
 
     def __str__(self) -> str:
         """
@@ -104,7 +104,7 @@ def make_batch_file(directives: Directives, commands: List[str], file_name: str 
         f.write(str(directives) + "\n")
         for command in commands:
             variables = re.findall(r"\$[0-9]*", command)
-            command = re.sub("^python", "python -u", command)  # Add -u to the python command to flush output
+            command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
             for var in variables:  # Replace $1 with "$1" to prevent bash from interpreting it
                 command = command.replace(var, f'"{var}"')
                 command = command.replace('""', '"')
