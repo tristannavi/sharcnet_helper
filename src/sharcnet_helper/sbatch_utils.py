@@ -22,7 +22,7 @@ def make_job_name(*args: Any, sep: str) -> str:
 class Directives:
     def __init__(self, mem: str, hours: int, modules: List[str], working_dir: Path = Path(__file__).parent,
                  minutes: int = 0, job_name: [str | None] = None, array_job: [int | List[int] | None] = None,
-                 mail_type: [str | List[str] | None] = "FAIL", *args):
+                 mail_type: [str | List[str] | None] = "FAIL", n_tasks: [int | None] = None, *args):
         """
         :param mem: the memory to allocate for the job
         :type mem: str, required
@@ -54,6 +54,7 @@ class Directives:
         self.job_name = job_name
         self.array_job = array_job
         self.mail_type = mail_type
+        self.n_tasks = n_tasks
 
     def make_directives(self) -> str:
         def array_job_fn():
@@ -64,12 +65,19 @@ class Directives:
             else:
                 return f"#SBATCH --array=1-{str(self.array_job)}"
 
+        def n_tasks_fn():
+            if self.n_tasks is None:
+                return ""
+            else:
+                return f"#SBATCH ----ntasks-per-node={str(self.n_tasks)}"
+
         directives = textwrap.dedent(f'''\
                     #!/bin/bash
                     #SBATCH --time={str(self.hours)}:{str(self.minutes) if self.minutes > 0 else "00"}:00
                     #SBATCH --account=def-houghten
                     #SBATCH --mem={self.mem}
                     {array_job_fn()}
+                    {n_tasks_fn()}
                     #SBATCH --mail-user=tn13bm@brocku.ca
                     #SBATCH --mail-type={self.mail_type if type(self.mail_type) == str else ','.join(self.mail_type)}
                     #SBATCH --output={self.working_dir.absolute()}/output/slurm_{self.job_name}-{"%A_%a" if self.array_job is not None else "%A"}.out
