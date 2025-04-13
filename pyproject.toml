@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sharcnet_helper"
-version = "2.0"
+version = "2.1"
 description = ""
 # readme = "README.md"
 license = { text = "GPL" }

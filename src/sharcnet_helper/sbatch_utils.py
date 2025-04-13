@@ -69,7 +69,7 @@ class Directives:
             if self.n_tasks is None:
                 return ""
             else:
-                return f"#SBATCH ----ntasks-per-node={str(self.n_tasks)}"
+                return f"#SBATCH --ntasks-per-node={str(self.n_tasks)}"
 
         directives = textwrap.dedent(f'''\
                     #!/bin/bash
