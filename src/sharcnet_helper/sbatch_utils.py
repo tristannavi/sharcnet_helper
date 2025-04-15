@@ -146,3 +146,28 @@ def sleep_and_write(user: str, hours: float = 0.5) -> int:
         subprocess.call(shlex.split(f"mkdir -p temp"))
         subprocess.call(shlex.split(f"rm -rf temp"))
     return 0
+
+
+def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | None = None) -> None:
+    """
+    Create a virtual environment with the given name.
+    :param packages: List of packages to install in the virtual environment.
+    :param path: Path to the directory where the virtual environment will be created.
+    :param venv_name: Name of the virtual environment to create.
+    :return: None
+    """
+
+    # Check if the virtual environment already exists
+    if not Path(venv_name).exists():
+        commands = f'''
+        module load python scipy-stack
+        virtualenv --no-download {path.absolute()}/{venv_name}
+        source {path.absolute()}/{venv_name}/bin/activate
+        pip install --upgrade pip
+        pip install {' '.join(packages)}
+        '''
+
+        process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        process.communicate(commands)
+    else:
+        print(f"Virtual environment {venv_name} already exists")
