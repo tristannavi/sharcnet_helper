@@ -21,8 +21,8 @@ def make_job_name(*args: Any, sep: str) -> str:
 
 class Directives:
     def __init__(self, mem: str, hours: int, modules: List[str], working_dir: Path = Path(__file__).parent,
-                 minutes: int = 0, job_name: [str | None] = None, array_job: [int | List[int] | None] = None,
-                 mail_type: [str | List[str] | None] = "FAIL", n_tasks: int | None = None, *args):
+                 minutes: int = 0, job_name: str | None = None, array_job: int | List[int] | None = None,
+                 mail_type: str | List[str] | None = "FAIL", n_tasks: int | None = None, *args):
         """
         :param mem: the memory to allocate for the job
         :type mem: str, required
