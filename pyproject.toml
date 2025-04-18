@@ -1,12 +1,11 @@
 [build-system]
-requires = ["setuptools>=20.0", "wheel"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "sharcnet_helper"
 version = "2.2"
 description = ""
-requires-python = ">=3.6"
 # readme = "README.md"
 license = { text = "GPL" }
 authors = [{ name = "Tristan" }]
