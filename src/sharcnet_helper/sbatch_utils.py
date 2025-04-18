@@ -51,7 +51,6 @@ class Directives:
         :type mail_type: str | List[str] | None, optional
         :rtype: None
         """
-
         self.mem = mem
         self.hours = hours
         self.minutes = minutes
@@ -93,19 +92,21 @@ class Directives:
                     #SBATCH --job-name={self.job_name}-{"%A_%a" if self.array_job is not None else "%j"}
                 ''')
 
+        directives.replace("\n\n", "\n")
         directives += textwrap.dedent(f'''
                 mkdir -p {self.working_dir.absolute()}/output
                 module load {' '.join(self.modules)}
             ''')
 
-        return directives  # .replace("\n\n", "\n", 1)
+        return directives
 
-    def __str__(self) -> str:
-        """
-        Return the directives as a string.
-        :rtype: str
-        """
-        return self.make_directives()
+
+def __str__(self) -> str:
+    """
+    Return the directives as a string.
+    :rtype: str
+    """
+    return self.make_directives()
 
 
 def make_batch_file(directives: Directives, commands: List[str], file_name: str = "sbatch.sh") -> None:
@@ -167,7 +168,6 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
     :param venv_name: Name of the virtual environment to create.
     :return: None
     """
-
     # Check if the virtual environment already exists
     if not Path(venv_name).exists():
         commands = f'''
