@@ -20,9 +20,18 @@ def make_job_name(*args: Any, sep: str) -> str:
 
 
 class Directives:
-    def __init__(self, mem: str, hours: int, modules: List[str], working_dir: Path = Path(__file__).parent,
-                 minutes: int = 0, job_name: str | None = None, array_job: int | List[int] | None = None,
-                 mail_type: str | List[str] | None = "FAIL", n_tasks: int | None = None, *args):
+    def __init__(
+            self, mem: str,
+            hours: int,
+            modules: List[str],
+            working_dir: Path,
+            minutes: int = 0,
+            job_name: str | None = None,
+            array_job: int | List[int] | None = None,
+            mail_type: str | List[str] | None = "FAIL",
+            n_tasks: int | None = None,
+            *args
+    ):
         """
         :param mem: the memory to allocate for the job
         :type mem: str, required
@@ -30,8 +39,8 @@ class Directives:
         :type hours: int, required
         :param minutes: the number of minutes to allocate for the job
         :type minutes: int, optional
-        :param working_dir: the working directory for the job, defaults to the current directory
-        :type working_dir: Path, optional
+        :param working_dir: the working directory for the job
+        :type working_dir: Path, required
         :param modules: the modules to load for the job
         :type modules: List[str], required
         :param job_name: the name of the job
@@ -80,12 +89,14 @@ class Directives:
                     {n_tasks_fn()}
                     #SBATCH --mail-user=tn13bm@brocku.ca
                     #SBATCH --mail-type={self.mail_type if type(self.mail_type) == str else ','.join(self.mail_type)}
-                    #SBATCH --output={self.working_dir.absolute()}/output/slurm_{self.job_name}-{"%A_%a" if self.array_job is not None else "%A"}.out
-                    #SBATCH --job-name={self.job_name}-{"%A_%a" if self.array_job is not None else "%A"}
-                    
-                    mkdir -p {self.working_dir.absolute()}/output
-                    module load {' '.join(self.modules)}
+                    #SBATCH --output={self.working_dir.absolute()}/output/slurm_{self.job_name}-{"%A_%a" if self.array_job is not None else "%j"}.out
+                    #SBATCH --job-name={self.job_name}-{"%A_%a" if self.array_job is not None else "%j"}
                 ''')
+
+        directives += textwrap.dedent(f'''
+                mkdir -p {self.working_dir.absolute()}/output
+                module load {' '.join(self.modules)}
+            ''')
 
         return directives  # .replace("\n\n", "\n", 1)
 
