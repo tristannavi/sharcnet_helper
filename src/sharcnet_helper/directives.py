@@ -3,6 +3,8 @@ import tomllib
 from pathlib import Path
 from typing import List
 
+from sharcnet_helper.env import make_venv
+
 
 class Directives:
     def __init__(
@@ -118,6 +120,38 @@ class PythonDirectives(Directives):
         self.modules.append("python")
         self.modules.append("scipy-stack") if self.scipy_stack else ...
 
+        make_venv()
+
+    @classmethod
+    def new_env(
+            cls,
+            mem: str,
+            hours: int,
+            modules: List[str],
+            working_dir: Path,
+            env_path: Path | None,
+            minutes: int = 0,
+            job_name: str | None = None,
+            array_job: int | List[int] | None = None,
+            mail_type: str | List[str] | None = "FAIL",
+            n_tasks: int | None = None,
+            scipy_stack: bool = False,
+            python_packages: List[str] | None = None,
+            python_version: str | None = None,
+            venv_name: str = "",
+            *args,
+    ):
+        super().__init__(mem, hours, modules, working_dir, minutes, job_name, array_job, mail_type, n_tasks, *args)
+        self.env_path = env_path
+        self.scipy_stack = scipy_stack
+        self.python_packages = python_packages
+        self.modules.append("python")
+        self.modules.append("scipy-stack") if self.scipy_stack else ...
+        self.python_version - python_version
+        self.venv_name = venv_name
+
+        make_venv(venv_name, env_path,python_packages, python_version, modules)
+
     @classmethod
     def from_file(
             cls,
@@ -144,7 +178,7 @@ class PythonDirectives(Directives):
         commands = f'''
                 module load {" ".join(self.modules)}
                 source {self.env_path.absolute()}/bin/activate
-                pip install --force-reinstall -v {' '.join(packages)}
+                pip install --force-reinstall -v {' '.join([x for x in packages if "git+" in x])}
                 '''
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         process.communicate(commands)

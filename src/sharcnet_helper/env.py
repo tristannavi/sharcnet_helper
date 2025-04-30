@@ -5,7 +5,7 @@ from typing import List
 
 
 def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
-              modules2: List[str] | None = None, file_name: str | None = None) -> None:
+              modules2: List[str] | None = None, file_name: str | None = "") -> None:
     """
     Create a virtual environment with the given name.
     :param scipy_stack:
@@ -25,7 +25,7 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
             modules = None
 
         commands = f'''
-        module load {" ".join(modules) if modules is not None else ""}
+        {"module load " + " ".join(modules) if modules is not None else ""}
         module load {version if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
         virtualenv --no-download {path.absolute()}/{venv_name}
@@ -40,7 +40,7 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
         print(f"Virtual environment {venv_name} created with Python version {version} and modules {modules}")
 
         if file_name is not None:
-            make_file(file_name, path, packages, modules)
+            make_file(venv_name if file_name == "" else file_name, path, packages, modules)
     else:
         print(f"Virtual environment {venv_name} already exists")
 
