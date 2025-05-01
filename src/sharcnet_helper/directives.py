@@ -1,9 +1,8 @@
+import subprocess
 import textwrap
 import tomllib
 from pathlib import Path
 from typing import List
-
-from sharcnet_helper.env import make_venv
 
 
 class Directives:
@@ -17,42 +16,29 @@ class Directives:
             job_name: str | None = None,
             array_job: int | List[int] | None = None,
             mail_type: str | List[str] | None = "FAIL",
-            n_tasks: int | None = None,
-            *args
+            n_tasks: int | None = None
     ):
         """
         :param mem: the memory to allocate for the job
-        :type mem: str, required
         :param hours: the number of hours to allocate for the job
-        :type hours: int, required
         :param minutes: the number of minutes to allocate for the job
-        :type minutes: int, optional
         :param working_dir: the working directory for the job
-        :type working_dir: Path, required
         :param modules: the modules to load for the job
-        :type modules: List[str], required
         :param job_name: the name of the job
-        :type job_name: str | None, optional
         :param array_job: if this is an array job, the number of runs in the array
-        :type array_job: int | List[int] | None, optional
         :param mail_type: the type of email to send. ALL, BEGIN, END, FAIL, REQUEUE, TIME_LIMIT, TIME_LIMIT_90, defaults to FAIL
-        :type mail_type: str | List[str] | None, optional
-        :rtype: None
         """
         self.mem = mem
         self.hours = hours
         self.minutes = minutes
         self.working_dir = working_dir
         self.modules = modules
-        # if args is None:
-        #     self.job_name = _make_job_name(*args)
-        # else:
         self.job_name = job_name
         self.array_job = array_job
         self.mail_type = mail_type
         self.n_tasks = n_tasks
 
-    def make_directives(self) -> str:
+    def make_directives(self, *args, sep: str = "_") -> str:
         def array_job_fn():
             if self.array_job is None:
                 return ""
@@ -66,6 +52,9 @@ class Directives:
                 return ""
             else:
                 return f"#SBATCH --ntasks-per-node={str(self.n_tasks)}"
+
+        if args:
+            self.job_name = sep.join(str(arg) for arg in args)
 
         directives = textwrap.dedent(f'''\
                     #!/bin/bash
@@ -91,7 +80,6 @@ class Directives:
     def __str__(self) -> str:
         """
         Return the directives as a string.
-        :rtype: str
         """
         return self.make_directives()
 
@@ -110,17 +98,18 @@ class PythonDirectives(Directives):
             mail_type: str | List[str] | None = "FAIL",
             n_tasks: int | None = None,
             scipy_stack: bool = False,
-            python_packages: List[str] | None = None,
-            *args
+            python_packages: List[str] | None = None
     ):
-        super().__init__(mem, hours, modules, working_dir, minutes, job_name, array_job, mail_type, n_tasks, *args)
+        super().__init__(mem, hours, modules, working_dir, minutes, job_name, array_job, mail_type, n_tasks)
         self.env_path = env_path
         self.scipy_stack = scipy_stack
         self.python_packages = python_packages
         self.modules.append("python")
         self.modules.append("scipy-stack") if self.scipy_stack else ...
 
-        make_venv()
+        self.update_packages()
+
+        # make_venv()
 
     @classmethod
     def new_env(
@@ -138,19 +127,16 @@ class PythonDirectives(Directives):
             scipy_stack: bool = False,
             python_packages: List[str] | None = None,
             python_version: str | None = None,
-            venv_name: str = "",
-            *args,
+            venv_name: str = ""
     ):
-        super().__init__(mem, hours, modules, working_dir, minutes, job_name, array_job, mail_type, n_tasks, *args)
-        self.env_path = env_path
-        self.scipy_stack = scipy_stack
-        self.python_packages = python_packages
-        self.modules.append("python")
-        self.modules.append("scipy-stack") if self.scipy_stack else ...
-        self.python_version - python_version
-        self.venv_name = venv_name
+        cls.env_path = env_path
+        cls.python_version = python_version
+        cls.venv_name = venv_name
 
-        make_venv(venv_name, env_path,python_packages, python_version, modules)
+        # make_venv(venv_name, env_path, python_packages, python_version, modules)
+
+        return cls(mem, hours, modules, working_dir, env_path, minutes, job_name, array_job,
+                   mail_type, n_tasks, False, python_packages)
 
     @classmethod
     def from_file(
@@ -164,24 +150,23 @@ class PythonDirectives(Directives):
             job_name: str | None = None,
             array_job: int | List[int] | None = None,
             mail_type: str | List[str] | None = "FAIL",
-            n_tasks: int | None = None,
-            *args,
+            n_tasks: int | None = None
     ):
         with open(file_path, "rb") as file:
             parameters = tomllib.load(file)
 
         return cls(mem, hours, parameters["modules"], working_dir, parameters["env_path"], minutes, job_name, array_job,
-                   mail_type,
-                   n_tasks, False, parameters["packages"], *args)
+                   mail_type, n_tasks, False, parameters["packages"])
 
-    def __call__(self):
+    def update_packages(self):
         commands = f'''
                 module load {" ".join(self.modules)}
                 source {self.env_path.absolute()}/bin/activate
-                pip install --force-reinstall -v {' '.join([x for x in packages if "git+" in x])}
+                pip install --force-reinstall -v {' '.join([x for x in self.python_packages if "git+" in x])}
                 '''
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-        process.communicate(commands)
+        o = process.communicate(commands)
+        print(o)
         # return super().make_directives() + textwrap.dedent(f'''
         #         source {self.env_path.absolute()}/bin/activate
         #     ''')

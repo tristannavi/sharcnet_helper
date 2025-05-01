@@ -8,13 +8,15 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
               modules2: List[str] | None = None, file_name: str | None = "") -> None:
     """
     Create a virtual environment with the given name.
-    :param scipy_stack:
-    :param version:
-    :param packages: List of packages to install in the virtual environment.
-    :param path: Path to the directory where the virtual environment will be created.
     :param venv_name: Name of the virtual environment to create.
+    :param path: Path to the directory where the virtual environment will be created.
+    :param packages: List of packages to install in the virtual environment.
+    :param version: Python version to use.
+    :param modules2: Modules to load.
+    :param file_name: Name of the output file to create.
     :return: None
     """
+
     # Check if the virtual environment already exists
     if not Path(venv_name).exists():
         if version is not None:
@@ -47,9 +49,9 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
 
 def make_file(file_name: str, path: Path, packages: List[str] | None, modules: List[str] | None):
     with open(f"{file_name}.toml", "w") as file:
-        file.writelines(f'env_path = "{path.absolute()}')
-        file.writelines(f'packages = [{", ".join(packages) if packages is not None else ""}]')
-        file.writelines(f'modules = [{", ".join(modules) if modules is not None else ""}]')
+        file.write(f'env_path = "{path.absolute()}"\n')
+        file.write(f'packages = ["{"\", \"".join(packages) if packages is not None else ""}"]\n')
+        file.write(f'modules = ["{"\", \"".join(modules) if modules is not None else ""}"]\n')
 
 
 def find_python_version(version: str) -> str | None:

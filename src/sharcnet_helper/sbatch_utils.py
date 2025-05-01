@@ -11,10 +11,7 @@ def make_job_name(*args: Any, sep: str) -> str:
     """
     Create a job name from the arguments.
     :param sep: the separator to use
-    :type sep: str, required
     :param args: the arguments to use
-    :type args: Any, required
-    :rtype: str
     """
     return sep.join(str(arg) for arg in args)
 
@@ -23,12 +20,8 @@ def make_batch_file(directives: Directives, commands: List[str], file_name: str 
     """
     Create a batch file for the job.
     :param directives: the directives to use
-    :type directives: Directives, required
     :param commands: the commands to run
-    :type commands: str, required
     :param file_name: the name of the file to create
-    :type file_name: str, optional
-    :rtype: None
     """
     with open(file_name, "w") as f:
         f.write(str(directives) + "\n")
@@ -48,9 +41,7 @@ def sleep_and_write(user: str, hours: float = 0.5) -> int:
 
     :param user: The username to check the queue for
     :param hours: Number of hours to sleep, default is 0.5 (30 minutes)
-    :type hours: float, optional
     :return: 0 to reset the counter
-    :rtype: int
     """
     while True:
         result = subprocess.run(
