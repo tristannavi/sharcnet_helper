@@ -27,6 +27,7 @@ class Directives:
         :param job_name: the name of the job
         :param array_job: if this is an array job, the number of runs in the array
         :param mail_type: the type of email to send. ALL, BEGIN, END, FAIL, REQUEUE, TIME_LIMIT, TIME_LIMIT_90, defaults to FAIL
+        :param n_tasks: the number of tasks to use per node, defaults to None
         """
         self.mem = mem
         self.hours = hours
@@ -100,6 +101,11 @@ class PythonDirectives(Directives):
             scipy_stack: bool = False,
             python_packages: List[str] | None = None
     ):
+        """
+        :param env_path: The path to the Python virtual environment.
+        :param scipy_stack: A flag indicating whether to include the 'scipy-stack' module.
+        :param python_packages: A list of additional Python packages to install in the environment.
+        """
         super().__init__(mem, hours, modules, working_dir, minutes, job_name, array_job, mail_type, n_tasks)
         self.env_path = env_path
         self.scipy_stack = scipy_stack
@@ -129,6 +135,12 @@ class PythonDirectives(Directives):
             python_version: str | None = None,
             venv_name: str = ""
     ):
+        """
+        :param python_version: Specific Python version for the virtual environment, if required.
+        :param venv_name: Name for the virtual environment to be created.
+
+        :return: A new instance of the class configured with the specified options.
+        """
         cls.env_path = env_path
         cls.python_version = python_version
         cls.venv_name = venv_name
@@ -143,7 +155,6 @@ class PythonDirectives(Directives):
             cls,
             mem: str,
             hours: int,
-            modules: List[str],
             working_dir: Path,
             file_path: Path,
             minutes: int = 0,
@@ -152,13 +163,23 @@ class PythonDirectives(Directives):
             mail_type: str | List[str] | None = "FAIL",
             n_tasks: int | None = None
     ):
+        """
+        :param file_path: Path to the configuration file in TOML format.
+
+        :return: An initialized class instance based on the configuration.
+        """
         with open(file_path, "rb") as file:
             parameters = tomllib.load(file)
 
         return cls(mem, hours, parameters["modules"], working_dir, parameters["env_path"], minutes, job_name, array_job,
                    mail_type, n_tasks, False, parameters["packages"])
 
-    def update_packages(self):
+    def update_packages(self) -> None:
+        """
+        Update Python packages for the environment using specified modules and packages.
+
+        :raises subprocess.SubprocessError: Raised if the subprocess encounters issues during execution.
+        """
         commands = f'''
                 module load {" ".join(self.modules)}
                 source {self.env_path.absolute()}/bin/activate

@@ -2,18 +2,9 @@ import re
 import shlex
 import subprocess
 from time import sleep
-from typing import List, Any
+from typing import List
 
 from sharcnet_helper.directives import Directives
-
-
-def make_job_name(*args: Any, sep: str) -> str:
-    """
-    Create a job name from the arguments.
-    :param sep: the separator to use
-    :param args: the arguments to use
-    """
-    return sep.join(str(arg) for arg in args)
 
 
 def make_batch_file(directives: Directives, commands: List[str], file_name: str = "sbatch.sh") -> None:
