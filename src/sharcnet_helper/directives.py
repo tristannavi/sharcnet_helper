@@ -4,6 +4,8 @@ import tomllib
 from pathlib import Path
 from typing import List
 
+from sharcnet_helper.DirectivesException import DirectivesException
+
 
 class Directives:
     def __init__(
@@ -39,7 +41,7 @@ class Directives:
         self.mail_type = mail_type
         self.n_tasks = n_tasks
 
-    def make_directives(self, *args, sep: str = "_") -> str:
+    def _make_directives(self, *args, sep: str = "_") -> str:
         def array_job_fn():
             if self.array_job is None:
                 return ""
@@ -57,6 +59,9 @@ class Directives:
         if args:
             self.job_name = sep.join(str(arg) for arg in args)
 
+        if not self.mem:
+            raise DirectivesException("Memory value is an empty string. You need to specify a memory value.")
+
         directives = textwrap.dedent(f'''\
                     #!/bin/bash
                     #SBATCH --time={str(self.hours)}:{str(self.minutes) if self.minutes > 0 else "00"}:00
@@ -66,11 +71,12 @@ class Directives:
                     {n_tasks_fn()}
                     #SBATCH --mail-user=tn13bm@brocku.ca
                     #SBATCH --mail-type={self.mail_type if type(self.mail_type) == str else ','.join(self.mail_type)}
-                    #SBATCH --output={self.working_dir.absolute()}/output/slurm_{self.job_name}-{"%A_%a" if self.array_job is not None else "%j"}.out
-                    #SBATCH --job-name={self.job_name}-{"%A_%a" if self.array_job is not None else "%j"}
+                    #SBATCH --output={self.working_dir.absolute()}/output/slurm_{"%A_%a" if self.array_job is not None else "%j"}_{self.job_name}.out
+                    #SBATCH --job-name={self.job_name}_{"%A_%a" if self.array_job is not None else "%j"}
                 ''')
 
-        directives.replace("\n\n", "\n")
+        directives = directives.replace("\n\n", "\n")
+        directives = directives.replace("\n\n", "\n")
         directives += textwrap.dedent(f'''
                 mkdir -p {self.working_dir.absolute()}/output
                 module load {' '.join(self.modules)}
@@ -82,7 +88,7 @@ class Directives:
         """
         Return the directives as a string.
         """
-        return self.make_directives()
+        return self._make_directives()
 
 
 class PythonDirectives(Directives):

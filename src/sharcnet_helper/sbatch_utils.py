@@ -7,7 +7,7 @@ from typing import List
 from sharcnet_helper.directives import Directives
 
 
-def make_batch_file(directives: Directives, commands: List[str], file_name: str = "sbatch.sh") -> None:
+def make_batch_file(*output_name, directives: Directives, commands: List[str], file_name: str = "sbatch.sh") -> None:
     """
     Create a batch file for the job.
     :param directives: the directives to use
@@ -15,7 +15,7 @@ def make_batch_file(directives: Directives, commands: List[str], file_name: str 
     :param file_name: the name of the file to create
     """
     with open(file_name, "w") as f:
-        f.write(str(directives) + "\n")
+        f.write(directives._make_directives(*output_name) + "\n")
         for command in commands:
             variables = re.findall(r"\$[0-9]*", command)
             command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
