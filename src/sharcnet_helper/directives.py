@@ -107,7 +107,9 @@ class PythonDirectives(Directives):
             mail_type: str | List[str] | None = "FAIL",
             n_tasks: int | None = None,
             scipy_stack: bool = False,
-            python_packages: List[str] | None = None
+            python_packages: List[str] | None = None,
+            python_version: str | None = None,
+            venv_name: str | None = None
     ):
         """
         :param env_path: The path to the Python virtual environment.
@@ -120,10 +122,14 @@ class PythonDirectives(Directives):
         self.python_packages = python_packages
         self.modules.append("python")
         self.modules.append("scipy-stack") if self.scipy_stack else ...
+        self.venv_name = venv_name if venv_name is not None else str(env_path.name)
+        self.python_version = python_version
 
+        env_path = env_path if venv_name is not None else env_path.parent
+
+        if python_version is not None:
+            make_venv(venv_name, env_path, python_packages, python_version, modules)
         self.update_packages()
-
-        # make_venv()
 
     @classmethod
     def new_env(
@@ -141,7 +147,7 @@ class PythonDirectives(Directives):
             scipy_stack: bool = False,
             python_packages: List[str] | None = None,
             python_version: str | None = None,
-            venv_name: str = ""
+
     ):
         """
         :param python_version: Specific Python version for the virtual environment, if required.
@@ -149,14 +155,14 @@ class PythonDirectives(Directives):
 
         :return: A new instance of the class configured with the specified options.
         """
-        cls.env_path = env_path
-        cls.python_version = python_version
-        cls.venv_name = venv_name
-
-        make_venv(venv_name, env_path, python_packages, python_version, modules)
-
-        return cls(mem, hours, modules, working_dir, env_path, minutes, job_name, array_job,
-                   mail_type, n_tasks, False, python_packages)
+        # cls.
+        # env_path = env_path if venv_name is not None else env_path.parent
+        # cls.python_version = python_version
+        #
+        # make_venv(venv_name, env_path, python_packages, python_version, modules)
+        #
+        # return cls(mem, hours, modules, working_dir, env_path, minutes, job_name, array_job,
+        #            mail_type, n_tasks, False, python_packages)
 
     @classmethod
     def from_file(
