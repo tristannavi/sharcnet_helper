@@ -128,7 +128,7 @@ class PythonDirectives(Directives):
         env_path = env_path if venv_name is not None else env_path.parent
 
         if python_version is not None:
-            make_venv(venv_name, env_path, python_packages, python_version, modules)
+            make_venv(venv_name, env_path, python_packages, python_version, modules, file_name=None)
         self.update_packages()
 
     @classmethod
