@@ -41,17 +41,17 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
 
         print(f"Virtual environment {venv_name} created with Python version {version} and modules {modules}")
 
-        if file_name is not None:
-            make_file(venv_name if file_name == "" else file_name, path, packages, modules)
+        # if file_name is not None:
+        #     make_file(venv_name if file_name == "" else file_name, path, packages, modules)
     else:
         print(f"Virtual environment {venv_name} already exists")
 
 
-def make_file(file_name: str, path: Path, packages: List[str] | None, modules: List[str] | None):
-    with open(f"{file_name}.toml", "w") as file:
-        file.write(f'env_path = "{path.absolute()}"\n')
-        file.write(f'packages = ["{"\", \"".join(packages) if packages is not None else ""}"]\n')
-        file.write(f'modules = ["{"\", \"".join(modules) if modules is not None else ""}"]\n')
+# def make_file(file_name: str, path: Path, packages: List[str] | None, modules: List[str] | None):
+#     with open(f"{file_name}.toml", "w") as file:
+#         file.write(f'env_path = "{path.absolute()}"\n')
+#         file.write(f'packages = ["{"\", \"".join(packages) if packages is not None else ""}"]\n')
+#         file.write(f'modules = ["{"\", \"".join(modules) if modules is not None else ""}"]\n')
 
 
 def find_python_version(version: str) -> str | None:
