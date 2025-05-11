@@ -122,13 +122,12 @@ class PythonDirectives(Directives):
         self.python_packages = python_packages
         self.modules.append("python")
         self.modules.append("scipy-stack") if self.scipy_stack else ...
-        self.venv_name = venv_name if venv_name is not None else str(env_path.name)
+        self.venv_name = venv_name if venv_name is not None else env_path.name
         self.python_version = python_version
 
         env_path = env_path if venv_name is not None else env_path.parent
 
-        if python_version is not None:
-            make_venv(venv_name, env_path, python_packages, python_version, modules, file_name=None)
+        make_venv(self.venv_name, env_path, self.python_packages, self.python_version, self.modules, file_name=None)
         self.update_packages()
 
     @classmethod
@@ -194,6 +193,8 @@ class PythonDirectives(Directives):
 
         :raises subprocess.SubprocessError: Raised if the subprocess encounters issues during execution.
         """
+        if self.python_packages is None:
+            return
         commands = f'''
                 module load {" ".join(self.modules)}
                 source {self.env_path.absolute()}/bin/activate
