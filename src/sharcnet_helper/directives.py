@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 
 from sharcnet_helper.DirectivesException import DirectivesException
+from sharcnet_helper.env import make_venv
 
 
 class Directives:
@@ -62,6 +63,7 @@ class Directives:
         if not self.mem:
             raise DirectivesException("Memory value is an empty string. You need to specify a memory value.")
 
+        # TODO: Remove hardcoded email and account
         directives = textwrap.dedent(f'''\
                     #!/bin/bash
                     #SBATCH --time={str(self.hours)}:{str(self.minutes) if self.minutes > 0 else "00"}:00
@@ -151,7 +153,7 @@ class PythonDirectives(Directives):
         cls.python_version = python_version
         cls.venv_name = venv_name
 
-        # make_venv(venv_name, env_path, python_packages, python_version, modules)
+        make_venv(venv_name, env_path, python_packages, python_version, modules)
 
         return cls(mem, hours, modules, working_dir, env_path, minutes, job_name, array_job,
                    mail_type, n_tasks, False, python_packages)
