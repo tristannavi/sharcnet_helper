@@ -37,7 +37,9 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
         '''
 
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-        process.communicate(commands)
+        out, err = process.communicate(commands)
+        print(out)
+        print(err)
 
         print(f"Virtual environment {venv_name} created with Python version {version} and modules {modules}")
 
