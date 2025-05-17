@@ -42,55 +42,14 @@ class Directives:
         self.mail_type = mail_type
         self.n_tasks = n_tasks
 
-    def _make_directives(self, *args, sep: str = "_") -> str:
-        def array_job_fn():
-            if self.array_job is None:
-                return ""
-            elif type(self.array_job) == list:
-                return "#SBATCH --array=" + ",".join(str(i) for i in self.array_job)
-            else:
-                return f"#SBATCH --array=1-{str(self.array_job)}"
-
-        def n_tasks_fn():
-            if self.n_tasks is None:
-                return ""
-            else:
-                return f"#SBATCH --ntasks-per-node={str(self.n_tasks)}"
-
-        if args:
-            self.job_name = sep.join(str(arg) for arg in args)
-
-        if not self.mem:
-            raise DirectivesException("Memory value is an empty string. You need to specify a memory value.")
-
-        # TODO: Remove hardcoded email and account
-        directives = textwrap.dedent(f'''\
-                    #!/bin/bash
-                    #SBATCH --time={str(self.hours)}:{str(self.minutes) if self.minutes > 0 else "00"}:00
-                    #SBATCH --account=def-houghten
-                    #SBATCH --mem={self.mem}
-                    {array_job_fn()}
-                    {n_tasks_fn()}
-                    #SBATCH --mail-user=tn13bm@brocku.ca
-                    #SBATCH --mail-type={self.mail_type if type(self.mail_type) == str else ','.join(self.mail_type)}
-                    #SBATCH --output={self.working_dir.absolute()}/output/slurm_{"%A_%a" if self.array_job is not None else "%j"}_{self.job_name}.out
-                    #SBATCH --job-name={self.job_name}_{"%A_%a" if self.array_job is not None else "%j"}
-                ''')
-
-        directives = directives.replace("\n\n", "\n")
-        directives = directives.replace("\n\n", "\n")
-        directives += textwrap.dedent(f'''
-                mkdir -p {self.working_dir.absolute()}/output
-                module load {' '.join(self.modules)}
-            ''')
-
-        return directives
+    def make_directives(self, *args, sep: str = "_") -> str:
+        return _make_directives(self, *args, sep=sep)
 
     def __str__(self) -> str:
         """
         Return the directives as a string.
         """
-        return self._make_directives()
+        return _make_directives(self)
 
 
 class PythonDirectives(Directives):
@@ -209,5 +168,50 @@ class PythonDirectives(Directives):
         #         source {self.env_path.absolute()}/bin/activate
         #     ''')
 
-    def _make_directives(self, *args, sep: str = "_") -> str:
-        return super()._make_directives(self, *args, sep=sep) + f"\nsource {self.env_path.absolute()}/bin/activate"
+    def make_directives(self, *args, sep: str = "_") -> str:
+        return _make_directives(self, *args, sep=sep) + f"source {self.env_path.absolute()}/bin/activate"
+
+
+def _make_directives(directives: Directives, *args, sep: str = "_") -> str:
+    def array_job_fn():
+        if directives.array_job is None:
+            return ""
+        elif type(directives.array_job) == list:
+            return "#SBATCH --array=" + ",".join(str(i) for i in directives.array_job)
+        else:
+            return f"#SBATCH --array=1-{str(directives.array_job)}"
+
+    def n_tasks_fn():
+        if directives.n_tasks is None:
+            return ""
+        else:
+            return f"#SBATCH --ntasks-per-node={str(directives.n_tasks)}"
+
+    if args:
+        directives.job_name = sep.join(str(arg) for arg in args)
+
+    if not directives.mem:
+        raise DirectivesException("Memory value is an empty string. You need to specify a memory value.")
+
+    # TODO: Remove hardcoded email and account
+    directives_text = textwrap.dedent(f'''\
+                #!/bin/bash
+                #SBATCH --time={str(directives.hours)}:{str(directives.minutes) if directives.minutes > 0 else "00"}:00
+                #SBATCH --account=def-houghten
+                #SBATCH --mem={directives.mem}
+                {array_job_fn()}
+                {n_tasks_fn()}
+                #SBATCH --mail-user=tn13bm@brocku.ca
+                #SBATCH --mail-type={directives.mail_type if type(directives.mail_type) == str else ','.join(directives.mail_type)}
+                #SBATCH --output={directives.working_dir.absolute()}/output/slurm_{"%A_%a" if directives.array_job is not None else "%j"}_{directives.job_name}.out
+                #SBATCH --job-name={"%A_%a" if directives.array_job is not None else "%j"}_{directives.job_name}
+            ''')
+
+    directives_text = directives_text.replace("\n\n", "\n")
+    directives_text = directives_text.replace("\n\n", "\n")
+    directives_text += textwrap.dedent(f'''
+            mkdir -p {directives.working_dir.absolute()}/output
+            module load {' '.join(directives.modules)}
+        ''')
+
+    return directives_text

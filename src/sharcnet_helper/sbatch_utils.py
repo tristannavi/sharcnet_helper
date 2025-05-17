@@ -1,9 +1,11 @@
 import re
 import shlex
 import subprocess
+import textwrap
 from time import sleep
 from typing import List
 
+from sharcnet_helper.DirectivesException import DirectivesException
 from sharcnet_helper.directives import Directives
 
 
@@ -15,7 +17,7 @@ def make_batch_file(*output_name, directives: Directives, commands: List[str], f
     :param file_name: the name of the file to create
     """
     with open(file_name, "w") as f:
-        f.write(directives._make_directives(*output_name) + "\n")
+        f.write(directives.make_directives(*output_name) + "\n")
         for command in commands:
             variables = re.findall(r"\$[0-9]*", command)
             command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
