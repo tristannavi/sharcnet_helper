@@ -200,9 +200,14 @@ class PythonDirectives(Directives):
                 source {self.env_path.absolute()}/bin/activate
                 pip install --force-reinstall -v {' '.join([x for x in self.python_packages if "git+" in x])}
                 '''
-        process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-        o = process.communicate(commands)
-        print(o)
+        if self.python_packages is not None:
+            process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+            o = process.communicate(commands)
+            print(o)
+
         # return super().make_directives() + textwrap.dedent(f'''
         #         source {self.env_path.absolute()}/bin/activate
         #     ''')
+
+    def _make_directives(self, *args, sep: str = "_") -> str:
+        return super()._make_directives(self, *args, sep=sep) + f"\nsource {self.env_path.absolute()}/bin/activate"
