@@ -19,7 +19,9 @@ class Directives:
             job_name: str | None = None,
             array_job: int | List[int] | None = None,
             mail_type: str | List[str] | None = "FAIL",
-            n_tasks: int | None = None
+            n_tasks: int | None = None,
+            email: str | None = None,
+            account: str | None = None
     ):
         """
         :param mem: the memory to allocate for the job
@@ -41,6 +43,8 @@ class Directives:
         self.array_job = array_job
         self.mail_type = mail_type
         self.n_tasks = n_tasks
+        self.email = email
+        self.account = account
 
     def make_directives(self, *args, sep: str = "_") -> str:
         return _make_directives(self, *args, sep=sep)
@@ -90,39 +94,6 @@ class PythonDirectives(Directives):
         self.update_packages()
 
     @classmethod
-    def new_env(
-            cls,
-            mem: str,
-            hours: int,
-            modules: List[str],
-            working_dir: Path,
-            env_path: Path | None,
-            minutes: int = 0,
-            job_name: str | None = None,
-            array_job: int | List[int] | None = None,
-            mail_type: str | List[str] | None = "FAIL",
-            n_tasks: int | None = None,
-            scipy_stack: bool = False,
-            python_packages: List[str] | None = None,
-            python_version: str | None = None,
-
-    ):
-        """
-        :param python_version: Specific Python version for the virtual environment, if required.
-        :param venv_name: Name for the virtual environment to be created.
-
-        :return: A new instance of the class configured with the specified options.
-        """
-        # cls.
-        # env_path = env_path if venv_name is not None else env_path.parent
-        # cls.python_version = python_version
-        #
-        # make_venv(venv_name, env_path, python_packages, python_version, modules)
-        #
-        # return cls(mem, hours, modules, working_dir, env_path, minutes, job_name, array_job,
-        #            mail_type, n_tasks, False, python_packages)
-
-    @classmethod
     def from_file(
             cls,
             mem: str,
@@ -164,10 +135,6 @@ class PythonDirectives(Directives):
             o = process.communicate(commands)
             print(o)
 
-        # return super().make_directives() + textwrap.dedent(f'''
-        #         source {self.env_path.absolute()}/bin/activate
-        #     ''')
-
     def make_directives(self, *args, sep: str = "_") -> str:
         return _make_directives(self, *args, sep=sep) + f"source {self.env_path.absolute()}/bin/activate"
 
@@ -193,18 +160,17 @@ def _make_directives(directives: Directives, *args, sep: str = "_") -> str:
     if not directives.mem:
         raise DirectivesException("Memory value is an empty string. You need to specify a memory value.")
 
-    # TODO: Remove hardcoded email and account
     directives_text = textwrap.dedent(f'''\
                 #!/bin/bash
                 #SBATCH --time={str(directives.hours)}:{str(directives.minutes) if directives.minutes > 0 else "00"}:00
-                #SBATCH --account=def-houghten
+                #SBATCH --account={directives.account}
                 #SBATCH --mem={directives.mem}
                 {array_job_fn()}
                 {n_tasks_fn()}
-                #SBATCH --mail-user=tn13bm@brocku.ca
+                #SBATCH --mail-user={directives.email}
                 #SBATCH --mail-type={directives.mail_type if type(directives.mail_type) == str else ','.join(directives.mail_type)}
                 #SBATCH --output={directives.working_dir.absolute()}/output/slurm_{"%A_%a" if directives.array_job is not None else "%j"}_{directives.job_name}.out
-                #SBATCH --job-name={"%A_%a" if directives.array_job is not None else "%j"}_{directives.job_name}
+                #SBATCH --job-name={directives.job_name}
             ''')
 
     directives_text = directives_text.replace("\n\n", "\n")
