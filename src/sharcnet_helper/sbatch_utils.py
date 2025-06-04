@@ -1,3 +1,4 @@
+import os
 import re
 import shlex
 import subprocess
@@ -27,7 +28,7 @@ def make_batch_file(*output_name, directives: Directives, commands: List[str], f
             f.write(command + "\n")
 
 
-def sleep_and_write(user: str, hours: float = 0.5) -> int:
+def sleep_and_write(user: str | None = None, hours: float = 0.5) -> int:
     """
     Checks if there are still matching jobs in the queue every 30 minutes.
     Create and delete a temp folder to ensure IO operations are done.
@@ -36,6 +37,9 @@ def sleep_and_write(user: str, hours: float = 0.5) -> int:
     :param hours: Number of hours to sleep, default is 0.5 (30 minutes)
     :return: 0 to reset the counter
     """
+    if user is None:
+        user = os.environ.get("USER")
+
     while True:
         result = subprocess.run(
             f"squeue -u {user} | grep {user}",
