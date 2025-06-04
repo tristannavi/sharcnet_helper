@@ -2,11 +2,9 @@ import os
 import re
 import shlex
 import subprocess
-import textwrap
 from time import sleep
 from typing import List
 
-from sharcnet_helper.DirectivesException import DirectivesException
 from sharcnet_helper.directives import Directives
 
 
