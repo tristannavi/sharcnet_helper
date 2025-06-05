@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import List
 
 
-def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
+def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
               modules2: List[str] | None = None, file_name: str | None = "") -> None:
     """
     Create a virtual environment with the given name.
     :param venv_name: Name of the virtual environment to create.
-    :param path: Path to the directory where the virtual environment will be created.
+    :param env_path: Path to the directory where the virtual environment will be created.
     :param packages: List of packages to install in the virtual environment.
     :param version: Python version to use.
     :param modules2: Modules to load.
@@ -18,7 +18,7 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
     """
 
     # Check if the virtual environment already exists
-    if not Path(venv_name).exists():
+    if not env_path.exists():
         if version is not None:
             version = find_python_version(version)
             modules = find_python_modules(version)
@@ -30,8 +30,8 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
         {"module load " + " ".join(modules) if modules is not None else ""}
         module load {version if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
-        virtualenv --no-download {path.absolute()}/{venv_name}
-        source {path.absolute()}/{venv_name}/bin/activate
+        virtualenv --no-download {env_path.absolute()}
+        source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
         pip -v install {' '.join(packages)}
         '''
@@ -41,12 +41,12 @@ def make_venv(venv_name: str, path: Path = Path.home(), packages: List[str] | No
         print(out)
         print(err)
 
-        print(f"Virtual environment {venv_name} created with Python version {version} and modules {modules}")
+        print(f"Virtual environment {env_path.name} created with Python version {version} and modules {modules}")
 
         # if file_name is not None:
         #     make_file(venv_name if file_name == "" else file_name, path, packages, modules)
     else:
-        print(f"Virtual environment {venv_name} already exists")
+        print(f"Virtual environment {env_path} already exists")
 
 
 # def make_file(file_name: str, path: Path, packages: List[str] | None, modules: List[str] | None):
