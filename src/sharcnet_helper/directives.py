@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 
 from sharcnet_helper.DirectivesException import DirectivesException
-from sharcnet_helper.env import make_venv
+from sharcnet_helper.env import make_venv, find_python_version
 
 
 class Directives:
@@ -87,10 +87,10 @@ class PythonDirectives(Directives):
         self.env_path = env_path
         self.scipy_stack = scipy_stack
         self.python_packages = python_packages
-        self.modules.append("python")
         self.modules.append("scipy-stack") if self.scipy_stack else ...
         self.venv_name = venv_name if venv_name is not None else env_path.name
-        self.python_version = python_version
+        self.python_version = find_python_version(python_version)
+        self.modules.append(f"python{"/" + self.python_version if self.python_version is not None else ""}")
 
         make_venv(self.env_path, self.python_packages, self.python_version, self.modules, file_name=None)
         self.update_packages()
