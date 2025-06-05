@@ -130,7 +130,7 @@ class PythonDirectives(Directives):
         commands = f'''
                 module load {" ".join(self.modules)}
                 source {self.env_path.absolute()}/bin/activate
-                pip install --force-reinstall -v {' '.join([x for x in self.python_packages if "git+" in x])}
+                pip install {' '.join([x for x in self.python_packages if "git+" in x])}
                 '''
         if self.python_packages is not None:
             process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
