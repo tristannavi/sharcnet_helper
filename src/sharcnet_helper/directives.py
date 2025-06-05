@@ -72,14 +72,28 @@ class PythonDirectives(Directives):
             scipy_stack: bool = False,
             python_packages: List[str] | None = None,
             python_version: str | None = None,
-            venv_name: str | None = None
+            venv_name: str | None = None,
+            email: str | None = None,
+            account: str | None = None
     ):
         """
         :param env_path: The path to the Python virtual environment.
         :param scipy_stack: A flag indicating whether to include the 'scipy-stack' module.
         :param python_packages: A list of additional Python packages to install in the environment.
         """
-        super().__init__(mem, hours, modules, working_dir, minutes, job_name, array_job, mail_type, n_tasks)
+        super().__init__(
+            mem=mem,
+            hours=hours,
+            modules=modules,
+            working_dir=working_dir,
+            minutes=minutes,
+            job_name=job_name,
+            array_job=array_job,
+            mail_type=mail_type,
+            n_tasks=n_tasks,
+            email=email,
+            account=account
+        )
         self.env_path = env_path
         self.scipy_stack = scipy_stack
         self.python_packages = python_packages
