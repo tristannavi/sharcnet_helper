@@ -81,19 +81,9 @@ class PythonDirectives(Directives):
         :param scipy_stack: A flag indicating whether to include the 'scipy-stack' module.
         :param python_packages: A list of additional Python packages to install in the environment.
         """
-        super().__init__(
-            mem=mem,
-            hours=hours,
-            modules=modules,
-            working_dir=working_dir,
-            minutes=minutes,
-            job_name=job_name,
-            array_job=array_job,
-            mail_type=mail_type,
-            n_tasks=n_tasks,
-            email=email,
-            account=account
-        )
+        super().__init__(mem=mem, hours=hours, modules=modules, working_dir=working_dir, minutes=minutes,
+                         job_name=job_name, array_job=array_job, mail_type=mail_type, n_tasks=n_tasks, email=email,
+                         account=account)
         self.env_path = env_path
         self.scipy_stack = scipy_stack
         self.python_packages = python_packages
