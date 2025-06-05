@@ -89,7 +89,7 @@ class PythonDirectives(Directives):
         self.python_version = python_version
 
         make_venv(self.env_path, self.python_packages, self.python_version, self.modules, file_name=None)
-        # self.update_packages()
+        self.update_packages()
 
     @classmethod
     def from_file(
