@@ -5,9 +5,10 @@ from typing import List
 
 
 def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
-              modules2: List[str] | None = None, file_name: str | None = "") -> None:
+              modules2: List[str] | None = None, file_name: str | None = "", verbose: bool = False) -> None:
     """
     Create a virtual environment with the given name.
+    :param verbose:
     :param venv_name: Name of the virtual environment to create.
     :param env_path: Path to the directory where the virtual environment will be created.
     :param packages: List of packages to install in the virtual environment.
@@ -38,8 +39,10 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
 
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         out, err = process.communicate(commands)
-        print(out)
-        print(err)
+        if verbose:
+            print(out)
+        if err is not None:
+            print(err)
 
         print(f"Virtual environment {env_path.name} created with Python version {version} and modules {modules}")
 

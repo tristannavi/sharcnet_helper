@@ -74,7 +74,8 @@ class PythonDirectives(Directives):
             python_version: str | None = None,
             venv_name: str | None = None,
             email: str | None = None,
-            account: str | None = None
+            account: str | None = None,
+            verbose: bool = False
     ):
         """
         :param env_path: The path to the Python virtual environment.
@@ -91,9 +92,11 @@ class PythonDirectives(Directives):
         self.venv_name = venv_name if venv_name is not None else env_path.name
         self.python_version = find_python_version(python_version)
         self.modules.append(f"{self.python_version if self.python_version is not None else 'python'}")
+        self.verbose = verbose
 
-        make_venv(self.env_path, self.python_packages, self.python_version, self.modules, file_name=None)
-        self.update_packages()
+        make_venv(self.env_path, self.python_packages, self.python_version, self.modules, file_name=None,
+                  verbose=verbose)
+        self.update_packages(verbose)
 
     @classmethod
     def from_file(
@@ -119,7 +122,7 @@ class PythonDirectives(Directives):
         return cls(mem, hours, parameters["modules"], working_dir, parameters["env_path"], minutes, job_name, array_job,
                    mail_type, n_tasks, False, parameters["packages"])
 
-    def update_packages(self) -> None:
+    def update_packages(self, verbose: bool) -> None:
         """
         Update Python packages for the environment using specified modules and packages.
 
@@ -135,8 +138,11 @@ class PythonDirectives(Directives):
                 '''
         if self.python_packages is not None:
             process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-            o = process.communicate(commands)
-            print(o)
+            o, e = process.communicate(commands)
+            if e is not None:
+                print(e)
+            if verbose:
+                print(o)
 
     def make_directives(self, *args, sep: str = "_") -> str:
         return _make_directives(self, *args, sep=sep) + f"source {self.env_path.absolute()}/bin/activate"
