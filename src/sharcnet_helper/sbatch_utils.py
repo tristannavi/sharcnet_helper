@@ -21,7 +21,7 @@ def make_batch_file(*output_name, directives: Directives, commands: List[str], f
             variables = re.findall(r"\$[0-9]*", command)
             command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
             for var in variables:  # Replace $1 with "$1" to prevent bash from interpreting it
-                command = command.replace(var, f'"{var}"')
+                command = command.replace(var, f'"{var}"', 1)
                 command = command.replace('""', '"')
             f.write(command + "\n")
 
