@@ -125,6 +125,7 @@ class PythonDirectives(Directives):
 
         :raises subprocess.SubprocessError: Raised if the subprocess encounters issues during execution.
         """
+        print("Updating packages...")
         if self.python_packages is None:
             return
         commands = f'''
