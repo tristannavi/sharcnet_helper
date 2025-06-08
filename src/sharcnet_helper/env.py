@@ -30,7 +30,7 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
         {"module load " + " ".join(modules) if modules is not None else ""}
         module load {version if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
-        virtualenv --no-download {env_path.absolute()}
+        virtualenv --no-download {env_path.absolute()} --reset-app-data
         source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
         pip -v install {' '.join(packages)}
