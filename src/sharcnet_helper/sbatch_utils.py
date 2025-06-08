@@ -8,11 +8,9 @@ from typing import List
 from sharcnet_helper.directives import Directives
 
 
-def make_batch_file(*output_name, directives: Directives, commands: List[str], replace: bool = True,
-                    file_name: str = "sbatch.sh") -> None:
+def make_batch_file(*output_name, directives: Directives, commands: List[str], file_name: str = "sbatch.sh") -> None:
     """
     Create a batch file for the job.
-    :param replace:
     :param directives: the directives to use
     :param commands: the commands to run
     :param file_name: the name of the file to create
@@ -20,12 +18,11 @@ def make_batch_file(*output_name, directives: Directives, commands: List[str], r
     with open(file_name, "w") as f:
         f.write(directives.make_directives(*output_name) + "\n")
         for command in commands:
-            if replace:
-                variables = re.findall(r"\$[0-9]*", command)
-                command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
-                for var in variables:  # Replace $1 with "$1" to prevent bash from interpreting it
-                    command = command.replace(var, f'"{var}"', 1)
-                    command = command.replace('""', '"')
+            variables = re.findall(r"\$[0-9]*", command)
+            command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
+            for var in variables:  # Replace $1 with "$1" to prevent bash from interpreting it
+                command = command.replace(var, f'"{var}"', 1)
+                command = command.replace('""', '"')
             f.write(command + "\n")
 
 
