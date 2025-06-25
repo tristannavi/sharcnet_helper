@@ -3,6 +3,8 @@ import subprocess
 from pathlib import Path
 from typing import List
 
+from sharcnet_helper.EnvException import EnvException
+
 
 def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
               modules2: List[str] | None = None, file_name: str | None = "", verbose: bool = False) -> None:
@@ -59,14 +61,20 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
 #         file.write(f'modules = ["{"\", \"".join(modules) if modules is not None else ""}"]\n')
 
 
-def find_python_version(version: str) -> str | None:
+def find_python_version(version: str | None) -> str:
+    if version is "" or version is None:
+        return "python"
     process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out, err = process.communicate("module spider python")
+    versions = []
     for line in out.split('\n'):
         if line.strip().startswith('python/'):
             if version in line:
-                return line.strip()
-    return None
+                versions.append(line.strip())
+    if not versions:
+        raise EnvException(f"Python version {version} not found")
+
+    return max(versions)
 
 
 def find_python_modules(version: str) -> List[str] | None:

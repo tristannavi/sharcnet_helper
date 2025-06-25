@@ -18,11 +18,8 @@ def make_batch_file(*output_name, directives: Directives, commands: List[str], f
     with open(file_name, "w") as f:
         f.write(directives.make_directives(*output_name) + "\n")
         for command in commands:
-            variables = re.findall(r"\$[0-9]*", command)
             command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
-            for var in variables:  # Replace $1 with "$1" to prevent bash from interpreting it
-                command = command.replace(var, f'"{var}"', 1)
-                command = command.replace('""', '"')
+            command = re.sub(r"\$[0-9]*", '"\g<1>"', command)
             f.write(command + "\n")
 
 
