@@ -19,7 +19,7 @@ def make_batch_file(*output_name, directives: Directives, commands: List[str], f
         f.write(directives.make_directives(*output_name) + "\n")
         for command in commands:
             command = re.sub("^python [^-]", "python -u", command)  # Add -u to the python command to flush output
-            command = re.sub(r"\$[0-9]*", '"\g<1>"', command)
+            # command = re.sub(r"\$[0-9]*", '"\g<1>"', command)
             f.write(command + "\n")
 
 
