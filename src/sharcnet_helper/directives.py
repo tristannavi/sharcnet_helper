@@ -75,6 +75,7 @@ class PythonDirectives(Directives):
             venv_name: str | None = None,
             email: str | None = None,
             account: str | None = None,
+            requirements_txt: str | None = None,
             verbose: bool = False
     ):
         """
@@ -88,6 +89,7 @@ class PythonDirectives(Directives):
         self.env_path = env_path
         self.scipy_stack = scipy_stack
         self.python_packages = python_packages
+        self.requirements_txt = requirements_txt
         self.modules.append("scipy-stack") if self.scipy_stack else ...
         self.venv_name = venv_name if venv_name is not None else env_path.name
         self.python_version = find_python_version(python_version)
@@ -129,20 +131,27 @@ class PythonDirectives(Directives):
         :raises subprocess.SubprocessError: Raised if the subprocess encounters issues during execution.
         """
         print("Updating packages...")
-        if self.python_packages is None:
+        if self.python_packages is None and self.requirements_txt is None:
             return
-        commands = f'''
-                module load {" ".join(self.modules)}
-                source {self.env_path.absolute()}/bin/activate
-                pip install {' '.join([x for x in self.python_packages if "git+" in x])}
-                '''
-        if self.python_packages is not None:
-            process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-            o, e = process.communicate(commands)
-            if e is not None:
-                print(e)
-            if verbose:
-                print(o)
+        elif self.requirements_txt is None:
+            commands = f'''
+                    module load {" ".join(self.modules)}
+                    source {self.env_path.absolute()}/bin/activate
+                    pip install {' '.join([x for x in self.python_packages])}
+                    '''
+        else:
+            commands = f'''
+                    module load {" ".join(self.modules)}
+                    source {self.env_path.absolute()}/bin/activate
+                    pip install -r {self.requirements_txt}
+                    pip install {' '.join([x for x in self.python_packages])}
+                    '''
+        process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        o, e = process.communicate(commands)
+        if e is not None:
+            print(e)
+        if verbose:
+            print(o)
 
     def make_directives(self, *args, sep: str = "_") -> str:
         return _make_directives(self, *args, sep=sep) + f"source {self.env_path.absolute()}/bin/activate"

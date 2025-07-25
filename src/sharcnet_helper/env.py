@@ -7,10 +7,12 @@ from sharcnet_helper.EnvException import EnvException
 
 
 def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
-              modules2: List[str] | None = None, file_name: str | None = "", verbose: bool = False) -> None:
+              modules2: List[str] | None = None, file_name: str | None = "", delete_previous: bool = False,
+              verbose: bool = False) -> None:
     """
     Create a virtual environment with the given name.
-    :param verbose:
+    :param delete_previous: Whether to delete the previous virtual environment if it exists. Default is False.
+    :param verbose: Print the output of the commands. Default is False.
     :param venv_name: Name of the virtual environment to create.
     :param env_path: Path to the directory where the virtual environment will be created.
     :param packages: List of packages to install in the virtual environment.
@@ -33,7 +35,7 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
         {"module load " + " ".join(modules) if modules is not None else ""}
         module load {version if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
-        virtualenv --no-download {env_path.absolute()} --reset-app-data
+        virtualenv --no-download {env_path.absolute()} --{"reset" if version >= "3.10" else "clear"}-app-data{" --clear" if delete_previous else ""}
         source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
         pip -v install {' '.join(packages)}
