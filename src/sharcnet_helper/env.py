@@ -1,13 +1,14 @@
 import argparse
 import subprocess
-from distutils.version import StrictVersion
 from pathlib import Path
 from typing import List
+
+from packaging.version import Version
 
 from sharcnet_helper.EnvException import EnvException
 
 
-def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, version: str | None = None,
+def make_venv(env_path: Path = Path.home(), version: Version | None = None,
               modules2: List[str] | None = None, file_name: str | None = "", delete_previous: bool = False,
               verbose: bool = False) -> None:
     """
@@ -26,20 +27,17 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
     # Check if the virtual environment already exists
     if not env_path.exists():
         if version is not None:
-            version = find_python_version(version)
             modules = find_python_modules(version)
         else:
-            version = None
             modules = None
 
         commands = f'''
         {"module load " + " ".join(modules) if modules is not None else ""}
-        module load {version if version is not None else "python"}
+        module load {"python/" + str(version) if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
-        virtualenv --no-download {env_path.absolute()} --{"reset" if StrictVersion(version.split("/")[1]) >= StrictVersion("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
+        virtualenv --no-download {env_path.absolute()} --{"reset" if version >= Version("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
         source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
-        pip -v install {' '.join(packages)}
         '''
 
         process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
@@ -64,9 +62,9 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
 #         file.write(f'modules = ["{"\", \"".join(modules) if modules is not None else ""}"]\n')
 
 
-def find_python_version(version: str | None) -> str:
+def find_python_version(version: str | None) -> Version | None:
     if version is "" or version is None:
-        return "python"
+        return None
     process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out, err = process.communicate("module spider python")
     versions = []
@@ -77,12 +75,12 @@ def find_python_version(version: str | None) -> str:
     if not versions:
         raise EnvException(f"Python version {version} not found")
 
-    return max(versions)
+    return Version(max(versions).split('/')[1])
 
 
-def find_python_modules(version: str) -> List[str] | None:
+def find_python_modules(version: Version) -> List[str] | None:
     process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-    out, err = process.communicate(f'module spider {version}')
+    out, err = process.communicate(f'module spider {str(version)}')
     modules = []
 
     out_generator = iter(out.splitlines())

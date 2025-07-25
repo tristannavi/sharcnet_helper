@@ -93,11 +93,10 @@ class PythonDirectives(Directives):
         self.modules.append("scipy-stack") if self.scipy_stack else ...
         self.venv_name = venv_name if venv_name is not None else env_path.name
         self.python_version = find_python_version(python_version)
-        self.modules.append(self.python_version)
+        self.modules.append(f"python/{self.python_version}")
         self.verbose = verbose
 
-        make_venv(self.env_path, self.python_packages, self.python_version, self.modules, file_name=None,
-                  verbose=verbose)
+        make_venv(self.env_path, self.python_version, self.modules, file_name=None, verbose=verbose)
         self.update_packages(verbose)
 
     @classmethod
