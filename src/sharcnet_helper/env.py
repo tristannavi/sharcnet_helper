@@ -36,7 +36,7 @@ def make_venv(env_path: Path = Path.home(), packages: List[str] | None = None, v
         {"module load " + " ".join(modules) if modules is not None else ""}
         module load {version if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
-        virtualenv --no-download {env_path.absolute()} --{"reset" if StrictVersion(version) >= StrictVersion("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
+        virtualenv --no-download {env_path.absolute()} --{"reset" if StrictVersion(version.split("/")[1]) >= StrictVersion("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
         source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
         pip -v install {' '.join(packages)}
