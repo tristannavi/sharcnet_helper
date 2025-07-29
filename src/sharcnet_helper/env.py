@@ -9,17 +9,15 @@ from sharcnet_helper.EnvException import EnvException
 
 
 def make_venv(env_path: Path = Path.home(), version: Version | None = None,
-              modules2: List[str] | None = None, file_name: str | None = "", delete_previous: bool = False,
+              modules: List[str] | None = None, file_name: str | None = "", delete_previous: bool = False,
               verbose: bool = False) -> None:
     """
     Create a virtual environment with the given name.
     :param delete_previous: Whether to delete the previous virtual environment if it exists. Default is False.
     :param verbose: Print the output of the commands. Default is False.
-    :param venv_name: Name of the virtual environment to create.
     :param env_path: Path to the directory where the virtual environment will be created.
-    :param packages: List of packages to install in the virtual environment.
     :param version: Python version to use.
-    :param modules2: Modules to load.
+    :param modules: Modules to load.
     :param file_name: Name of the output file to create.
     :return: None
     """
@@ -27,13 +25,10 @@ def make_venv(env_path: Path = Path.home(), version: Version | None = None,
     # Check if the virtual environment already exists
     if not env_path.exists():
         if version is not None:
-            modules = find_python_modules(version)
-        else:
-            modules = None
+            modules.extend(find_python_modules(version))
 
         commands = f'''
         {"module load " + " ".join(modules) if modules is not None else ""}
-        {"module load " + " ".join(modules2) if modules2 is not None else ""}
         module load {"python/" + str(version) if version is not None else "python"}
         virtualenv --no-download {env_path.absolute()} --{"reset" if version >= Version("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
         source {env_path.absolute()}/bin/activate
@@ -79,14 +74,16 @@ def find_python_version(version: str | None) -> Version | None:
     return Version(max(versions).split('/')[1])
 
 
-def find_python_modules(version: Version) -> List[str] | None:
+def find_python_modules(version: Version) -> List[str]:
     process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out, err = process.communicate(f'module spider python/{str(version)}')
     modules = []
 
     out_generator = iter(out.splitlines())
 
-    line = next(out_generator)
+    line = next(out_generator, "return")
+    if line == "return":
+        return modules
 
     while True:
         if 'You will need to load all module(s)' in line:
