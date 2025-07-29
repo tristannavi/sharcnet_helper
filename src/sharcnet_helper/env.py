@@ -33,8 +33,8 @@ def make_venv(env_path: Path = Path.home(), version: Version | None = None,
 
         commands = f'''
         {"module load " + " ".join(modules) if modules is not None else ""}
-        module load {"python/" + str(version) if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
+        module load {"python/" + str(version) if version is not None else "python"}
         virtualenv --no-download {env_path.absolute()} --{"reset" if version >= Version("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
         source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
@@ -87,6 +87,7 @@ def find_python_modules(version: Version) -> List[str] | None:
     out_generator = iter(out.splitlines())
 
     line = next(out_generator)
+
     while True:
         if 'You will need to load all module(s)' in line:
             break
