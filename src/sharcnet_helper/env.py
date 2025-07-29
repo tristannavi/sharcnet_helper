@@ -33,8 +33,8 @@ def make_venv(env_path: Path = Path.home(), version: Version | None = None,
 
         commands = f'''
         {"module load " + " ".join(modules) if modules is not None else ""}
-        module load {"python/" + str(version) if version is not None else "python"}
         {"module load " + " ".join(modules2) if modules2 is not None else ""}
+        module load {"python/" + str(version) if version is not None else "python"}
         virtualenv --no-download {env_path.absolute()} --{"reset" if version >= Version("3.10") else "clear"}-app-data{" --clear" if delete_previous else ""}
         source {env_path.absolute()}/bin/activate
         pip install --upgrade pip
@@ -82,11 +82,17 @@ def find_python_version(version: str | None) -> Version | None:
 def find_python_modules(version: Version) -> List[str] | None:
     process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
     out, err = process.communicate(f'module spider python/{str(version)}')
+    print("??")
+    print(err)
     modules = []
 
     out_generator = iter(out.splitlines())
 
-    line = next(out_generator)
+    # try:
+    #     line = next(out_generator)
+    # except StopIteration:
+    #     return None
+
     while True:
         if 'You will need to load all module(s)' in line:
             break
