@@ -73,14 +73,15 @@ def find_python_version(version: str | None) -> Version | None:
             if version in line:
                 versions.append(line.strip())
     if not versions:
-        raise EnvException(f"Python version {version} not found")
+        # raise EnvException(f"Python version {version} not found")
+        return Version(version)
 
     return Version(max(versions).split('/')[1])
 
 
 def find_python_modules(version: Version) -> List[str] | None:
     process = subprocess.Popen('/bin/bash', stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
-    out, err = process.communicate(f'module spider {str(version)}')
+    out, err = process.communicate(f'module spider python/{str(version)}')
     modules = []
 
     out_generator = iter(out.splitlines())
